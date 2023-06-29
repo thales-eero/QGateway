@@ -32,7 +32,7 @@
 
 #define GP_COMPONENT_ID GP_COMPONENT_ID_APP
 
-// #define GP_LOCAL_LOG
+#define GP_LOCAL_LOG
 #define LOG_PREFIX "[Q] Radio---------: "
 
 // #define DEBUG

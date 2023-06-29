@@ -36,7 +36,7 @@
  *                    Includes Definitions
  *****************************************************************************/
 
-//#define GP_LOCAL_LOG
+#define GP_LOCAL_LOG
 #if defined(GP_COMP_GPHAL) 
 #include "gpHal.h"
 #endif //defined(GP_COMP_GPHAL) && !defined(GP_DIVERSITY_GPHAL_COPROC)
@@ -526,8 +526,12 @@ static UInt32 Pd_GetTxTimestamp(gpPd_Handle_t pdHandle)
 
 static void Pd_SetTxTimestamp(gpPd_Handle_t pdHandle, gpPd_TimeStamp_t timestamp)
 {
-    PD_CHECK_HANDLE_INPUT_NO_RETURN(pdHandle);
-    gpPd_Descriptors[pdHandle]->attr.txcfm.txTimestamp = timestamp;
+    if(!PD_CHECK_HANDLE_ACCESSIBLE(pdHandle))
+    {
+        GP_LOG_SYSTEM_PRINTF("GP_PD_NR_OF_HANDLES %d",0,GP_PD_NR_OF_HANDLES);
+        GP_LOG_SYSTEM_PRINTF("pdHandle %d",0,(UInt8)pdHandle);
+        GP_LOG_SYSTEM_PRINTF("PD_CHECK_HANDLE_VALID %d PD_CHECK_HANDLE_IN_USE %d",0,PD_CHECK_HANDLE_VALID(pdHandle), PD_CHECK_HANDLE_IN_USE(pdHandle));
+    }
 }
 
 static UInt8 Pd_GetTxChannel(gpPd_Handle_t pdHandle)

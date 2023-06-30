@@ -76,6 +76,8 @@
  */
 
 #define GP_DIVERSITY_LOG
+#define GP_DIVERSITY_LOG_HOST_PRINTF
+#define GP_DIVERSITY_USE_LINUX_LOG
 #define GP_DIVERSITY_NR_OF_STACKS                          2
 #define GP_GIT_SHA                                         2334f506f9cba16a755256babb1eb0a69878a600
 #define GP_GIT_SHA_SHORT                                   2334f

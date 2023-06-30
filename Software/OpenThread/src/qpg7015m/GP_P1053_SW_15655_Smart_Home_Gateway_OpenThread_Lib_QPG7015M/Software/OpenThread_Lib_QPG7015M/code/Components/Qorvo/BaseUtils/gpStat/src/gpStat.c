@@ -40,7 +40,7 @@
  *                    Includes Definitions
  *****************************************************************************/
 
-//#define GP_LOCAL_LOG
+#define GP_LOCAL_LOG
 
 // General includes
 #include "gpStat.h"

@@ -46,11 +46,25 @@
 #include <stdarg.h>
 #include <sys/time.h>
 
+#if !defined(GP_DIVERSITY_LOG_HOST_PRINTF) 
+#error Only for platforms who support 'printf' functionality
+#endif //!GP_DIVERSITY_LOG_HOST_PRINTF
 
+#ifdef GP_DIVERSITY_USE_LINUX_LOG
+#include <syslog.h>
+static Bool Log_Inited = false;
+#endif //GP_DIVERSITY_USE_LINUX_LOG
 
 /*****************************************************************************
  *                    Macro Definitions
  *****************************************************************************/
+#ifdef GP_DIVERSITY_USE_LINUX_LOG
+#ifndef GP_LOG_PREFIX
+#define LOG_PREFIX "GP"
+#else
+#define LOG_PREFIX XSTRINGIFY(GP_LOG_PREFIX)
+#endif //GP_LOG_PREFIX
+#endif //GP_DIVERSITY_USE_LINUX_LOG
 
 #define LOG_MAX_LEN 200
 
@@ -66,8 +80,10 @@
 static char Log_BufferCompId[LOG_MAX_LEN];
 #endif //GP_LOG_BUFFERED_COMPID
 
+#ifdef GP_LOG_DIVERSITY_FILE_SUPPORT
 static FILE* Log_pLogFile = NULL;
 static Bool Log_Enabled = true;
+#endif //GP_LOG_DIVERSITY_FILE_SUPPORT
 
 
 /*****************************************************************************
@@ -128,7 +144,7 @@ Bool Log_Buffer(char* buf)
 
 static void Log_Formatted(UInt8 componentID, char* buf)
 {
-#if defined(HAVE_LOCALTIME) 
+#if defined(HAVE_LOCALTIME) && !defined(GP_DIVERSITY_USE_LINUX_LOG)
     char timeBuf[10];
     struct tm* local;
 #endif
@@ -136,6 +152,7 @@ static void Log_Formatted(UInt8 componentID, char* buf)
     UInt16 ms, us;
 #endif
 
+#ifndef GP_DIVERSITY_USE_LINUX_LOG
 #ifdef HAVE_LOCALTIME
 #if defined(GP_COMP_UNIT_TEST) || defined(GP_COMP_CHIPEMU)
     time_t t;
@@ -152,6 +169,7 @@ static void Log_Formatted(UInt8 componentID, char* buf)
     gettimeofday(&tv, NULL);
     local = localtime(&tv.tv_sec);
     strftime(timeBuf, 10, "%H:%M:%S", local);
+#ifdef GP_LOG_DIVERSITY_FILE_SUPPORT
     if(Log_Enabled)
     {
         printf("%s:%03u %02X %s\n", timeBuf, (UInt16)(tv.tv_usec / 1000), componentID, buf);
@@ -161,10 +179,14 @@ static void Log_Formatted(UInt8 componentID, char* buf)
         fprintf(Log_pLogFile, "%s:%03u %02X %s\n", timeBuf, (UInt16)(tv.tv_usec / 1000), componentID, buf);
         fflush(Log_pLogFile);
     }
+#else  //GP_LOG_DIVERSITY_FILE_SUPPORT
+    printf("%s:%03u %02X %s\n", timeBuf, (UInt16)(tv.tv_usec / 1000), componentID, buf);
+#endif //GP_LOG_DIVERSITY_FILE_SUPPORT
 #endif
 #else
     printf("%02X %s\n", componentID, buf);
 #endif
+#endif //GP_DIVERSITY_USE_LINUX_LOG
 }
 
 /*****************************************************************************
@@ -173,6 +195,11 @@ static void Log_Formatted(UInt8 componentID, char* buf)
 
 void gpLog_Init(void)
 {
+#ifdef GP_DIVERSITY_USE_LINUX_LOG
+// Use the same as otbr-agent, LOG_LOCAL5
+    openlog(LOG_PREFIX, LOG_CONS | LOG_PID | LOG_NDELAY, LOG_LOCAL5);
+    Log_Inited = true;
+#endif
 #ifdef GP_LOG_BUFFERED_COMPID
     MEMSET(Log_BufferCompId, 0, sizeof(Log_BufferCompId));
 #endif //GP_LOG_BUFFERED_COMPID
@@ -182,10 +209,16 @@ void gpLog_Printf(UInt8 componentID, Bool progmem, FLASH_STRING format_str, UInt
 {
     NOT_USED(progmem);
     char buf[LOG_MAX_LEN];
-
     va_list ap;
     va_start(ap, length);
+#ifdef GP_DIVERSITY_USE_LINUX_LOG
+    if(!Log_Inited) {
+        gpLog_Init();
+    }
+    vsyslog(LOG_DEBUG, format_str, ap);
+#else  // GP_DIVERSITY_USE_LINUX_LOG
     vsnprintf(buf, LOG_MAX_LEN, format_str, ap);
+#endif // GP_DIVERSITY_USE_LINUX_LOG
     va_end(ap);
 
 #ifdef GP_LOG_BUFFERED_COMPID
@@ -217,6 +250,7 @@ void gpLog_Flush(void)
     fflush(stdout);
 }
 
+#ifdef GP_LOG_DIVERSITY_FILE_SUPPORT
 void gpLog_EnableConsoleLog(Bool enable)
 {
     Log_Enabled = enable;
@@ -229,5 +263,6 @@ void gpLog_SetFilePointer(void* pFile)
 {
     Log_pLogFile = (FILE*)pFile;
 }
+#endif //GP_LOG_DIVERSITY_FILE_SUPPORT
 
 

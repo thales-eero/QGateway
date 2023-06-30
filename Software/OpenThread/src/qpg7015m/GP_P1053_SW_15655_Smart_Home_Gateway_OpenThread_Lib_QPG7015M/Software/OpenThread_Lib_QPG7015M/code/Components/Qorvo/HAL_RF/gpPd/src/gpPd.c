@@ -54,7 +54,7 @@
 #include "gpPd_ram.c"
 #include "gpPd_common.c"
 
-//#define GP_LOCAL_LOG
+#define GP_LOCAL_LOG
 
 /*****************************************************************************
  *                    Macro Definitions

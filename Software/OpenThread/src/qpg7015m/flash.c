@@ -55,6 +55,8 @@ void otPlatFlashInit(otInstance *aInstance)
     char        fileName[20];
     struct stat st;
     bool        create = false;
+    off_t start_offset;
+    uint32_t file_size;
 
     memset(&st, 0, sizeof(st));
 
@@ -71,12 +73,16 @@ void otPlatFlashInit(otInstance *aInstance)
     }
 
     sFlashFd = open(fileName, O_RDWR | O_CREAT, 0600);
-    lseek(sFlashFd, 0, SEEK_SET);
-
     assert(sFlashFd >= 0);
 
-    if (create)
+    file_size = lseek(sFlashFd, 0, SEEK_END);
+    printf ("node.flash sz = %u\n", file_size);
+
+    lseek(sFlashFd, 0, SEEK_SET);
+
+    if (create || file_size == 0)
     {
+        printf("Erase/init flash\n");
         for (uint8_t index = 0; index < SWAP_NUM; index++)
         {
             otPlatFlashErase(aInstance, index);

@@ -7,11 +7,6 @@ failed()
     exit 255
 }
 
-# Architecture check
-if [ "x86_64" != "$(uname -m)" ] ; then
-    failed "Architecture check failed! ThirdParty/tool_rpi contains only x86_64 cross compilers!"
-fi
-
 OTDIR="$(dirname "$0")"
 PATHCHES="$(realpath ${OTDIR}/../patches)"
 

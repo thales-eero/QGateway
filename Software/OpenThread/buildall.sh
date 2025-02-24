@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+set -x
 
 failed()
 {
@@ -27,25 +28,13 @@ GP712_LIB_TARGET="${OTDIR}/library/gp712/lib/libQorvoGP712_ftd.a"
 GP712_LIB_RCP_SOURCE="${GP712_LIB_PACKAGE}/Software/OpenThread_Lib_GP712/Work/QorvoGP712_rpi_rcp_socket/libQorvoGP712_rpi_rcp_socket.a"
 GP712_LIB_RCP_TARGET="${OTDIR}/library/gp712/lib/libQorvoGP712_rcp.a"
 
-THIRDPARTY="$(realpath ../../ThirdParty)"
-TOOLCHAIN_RPI="${THIRDPARTY}/tool_rpi/arm-bcm2708/arm-linux-gnueabihf"
-export TOOLCHAIN_RPI
+#THIRDPARTY="$(realpath ../../ThirdParty)"
+#TOOLCHAIN_RPI="${THIRDPARTY}/tool_rpi/arm-bcm2708/arm-linux-gnueabihf"
+#export TOOLCHAIN_RPI
 export TOOLCHAIN="${TOOLCHAIN_RPI}"
 export CROSS_COMPILE="arm-linux-gnueabihf-"
 export SYSTEMROOT="${TOOLCHAIN}/arm-linux-gnueabihf/sysroot"
 export PATH=$PATH:"${TOOLCHAIN}/bin"
-
-cherry()
-{
-    dir=`pwd`
-    REPO="$1"
-    PATCH="$2"
-
-    cd ${REPO}
-    git fetch origin main
-    git cherry-pick --no-commit ${PATCH}
-    cd ${dir}
-}
 
 platform_build()
 {
@@ -154,9 +143,6 @@ case "$TYPE" in
         ;;
 esac
 
-
-FIX_TG_CM01=3d5cb364f22f0881d5eb528aea01b8db40cc6dd2
-cherry ${THIRDPARTY}/openthread ${FIX_TG_CM01}
 
 if [ "${BUILD_QPG7015M}" = 1 ] ; then
     if [ "${BUILD_CLI}" = 1 ] ; then

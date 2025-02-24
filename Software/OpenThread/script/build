@@ -151,8 +151,12 @@ main()
                 -execdir sh -c 'x="$1"; arm-none-eabi-objcopy -O ihex "$1" "$2-$(basename ${x}).hex"' _ {} "${platform}" \;
             ;;
     esac
-    find "${builddir}/bin" -type f -executable -not -name '*.*' -not -name "${platform}-*" \
-        -execdir sh -c 'x="$1"; mv "$x" "$2-$(basename ${x}).elf"' _ {} "${platform}" \;
+
+    cd "${builddir}/bin"
+    for x in *
+    do
+        mv "$x" "$platform-$x.elf"
+    done
 }
 
 main "$@"

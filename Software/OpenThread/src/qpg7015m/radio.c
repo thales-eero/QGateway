@@ -87,6 +87,29 @@ static int8_t pendingTxPower = PENDING_TX_POWER_NONE;
 static uint8_t sScanstate         = 0;
 static int8_t  sLastReceivedPower = 127;
 
+static otPlatDiagOutputCallback sOutputCallback        = NULL;
+static void                    *sOutputCallbackContext = NULL;
+
+static void DiagOutput(const char *aFormat, ...)
+{
+    va_list args;
+
+    va_start(args, aFormat);
+
+    if (sOutputCallback != NULL)
+    {
+        sOutputCallback(aFormat, args, sOutputCallbackContext);
+    }
+
+    va_end(args);
+}
+
+void otPlatDiagSetOutputCallback(otInstance *aInstance, otPlatDiagOutputCallback aCallback, void *aContext)
+{
+    sOutputCallback        = aCallback;
+    sOutputCallbackContext = aContext;
+}
+
 otRadioCaps otPlatRadioGetCaps(otInstance *aInstance)
 {
     OT_UNUSED_VARIABLE(aInstance);

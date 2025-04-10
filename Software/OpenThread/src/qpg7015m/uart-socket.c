@@ -62,6 +62,9 @@
 #include "utils/code_utils.h"
 #include "utils/uart.h"
 
+#define GP_COMPONENT_ID GP_COMPONENT_ID_APP
+#include "gpLog.h"
+#define GP_LOCAL_LOG
 #define BUFFER_MAX_SIZE 255
 #define SOCKET_PORT 9190
 #define SOCKET_WRITE(socketInfo, buf, length) \
@@ -104,9 +107,11 @@ void PlatSocketRx(uint16_t length, const char *buffer, uint32_t socketId)
     uint8_t *buf = 0;
     PlatSocketId = socketId;
 
+    GP_LOG_SYSTEM_PRINTF("@@@ alloc %d bytes\n", length);
     if (length > 0)
     {
         buf = malloc(sizeof(length) + length);
+        GP_LOG_SYSTEM_PRINTF("@@@ success=%d\n", (int)(buf != NULL));
         memcpy(buf, &length, sizeof(length));
         memcpy(buf + sizeof(length), buffer, length);
         qorvoAlarmMilliStart(0, PlatSocketSendInput, (void *)buf);
